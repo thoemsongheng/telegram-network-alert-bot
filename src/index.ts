@@ -3,7 +3,6 @@ import { Telegraf } from "telegraf";
 import { CronJob } from "cron";
 import ping from "ping";
 import moment from "moment-timezone";
-import { message } from "telegraf/filters";
 import { hosts } from "../data/hosts";
 
 const TOKEN = process.env.TOKEN;
@@ -19,16 +18,16 @@ let alive: { host: string; live: boolean; time: moment.Moment }[] = [];
 
 const job = new CronJob(
   "*/5 * * * * *",
-  async () => {
-    for (let host of hosts) {
-      let res = await ping.promise.probe(host.ip);
+  () => {
+    hosts.forEach(async (host) => {
+      let res = await ping.promise.probe(host.ip, { timeout: 30 });
       if (!currentTime.isBetween(start, end)) return;
       if (res?.alive) {
         const found = alive.find((x) => x.host === host.ip);
         if (found) {
           if (found.live === false) {
             found.live = true;
-            const message = `● Alert: RECOVERY ✅\n- Type: UP\n- name: Little Digital Main Link\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${host.loc}\n${res.output}`;
+            const message = `● Alert: RECOVERY ✅\n- Type: UP\n- name: ${host.name}\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${host.loc}\n${res.output}`;
             // bot.telegram.sendMessage(GROUP_ID, message);
             console.log(message);
           }
@@ -41,7 +40,7 @@ const job = new CronJob(
         if (found) {
           if (found.live === true) {
             found.live = false;
-            const message = `● Alert: PROBLEM ❌\n- Type: DOWN\n- name: Little Digital Main Link\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${host.loc}\n${res.output}`;
+            const message = `● Alert: PROBLEM ❌\n- Type: DOWN\n- name: ${host.name}\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${host.loc}\n${res.output}`;
             // bot.telegram.sendMessage(GROUP_ID, message);
             console.log(message);
           }
@@ -49,7 +48,7 @@ const job = new CronJob(
           alive.push({ host: host.ip, live: false, time: currentTime });
         }
       }
-    }
+    });
   },
   null,
   true,
