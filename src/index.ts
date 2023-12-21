@@ -16,7 +16,6 @@ const end = moment("20:00:00", format);
 let alive: { host: string; live: boolean; time: moment.Moment }[] = [];
 
 setInterval(() => {
-  console.log("run");
   hosts.forEach(async (host) => {
     let res = await ping.promise.probe(host.ip, { timeout: 30 });
     if (!currentTime.isBetween(start, end)) return;
