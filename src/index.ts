@@ -24,7 +24,13 @@ setInterval(() => {
       if (found) {
         if (found.live === false) {
           found.live = true;
-          const message = `● Alert: RECOVERY ✅\n- Type: UP\n- name: ${host.name}\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${host.loc}\n${res.output}`;
+          const message = `● Alert: RECOVERY ✅\n- Type: UP\n- name: ${
+            host.name
+          }\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${
+            host.cid
+          }\n- Address: ${host.loc}\n- Date: ${currentTime.format("lll")}\n${
+            res.output
+          }`;
           // bot.api.sendMessage(GROUP_ID, message);
           console.log(message);
         }
@@ -37,7 +43,13 @@ setInterval(() => {
       if (found) {
         if (found.live === true) {
           found.live = false;
-          const message = `● Alert: PROBLEM ❌\n- Type: DOWN\n- name: ${host.name}\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${host.loc}\n${res.output}`;
+          const message = `● Alert: PROBLEM ❌\n- Type: DOWN\n- name: ${
+            host.name
+          }\n- IP: ${host.ip}\n- SID: ${host.sid}\n- CID: ${
+            host.cid
+          }\n- Address: ${host.loc}\n- Date: ${currentTime.format("lll")}\n${
+            res.output
+          }`;
           // bot.api.sendMessage(GROUP_ID, message);
           console.log(message);
         }
