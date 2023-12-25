@@ -172,7 +172,7 @@ fs.readFile("data/hosts.json", "utf8", (err, data) => {
   setInterval(() => {
     for (host of hosts) {
       ping.promise
-        .probe(host.ip, { timeout: 30 })
+        .probe(host.ip, { timeout: 1 })
         .then((res) => {
           if (!currentTime.isBetween(start, end)) return;
           if (res?.alive) {
