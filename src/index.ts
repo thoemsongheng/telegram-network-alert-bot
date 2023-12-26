@@ -8,20 +8,6 @@ const TOKEN = process.env.TOKEN;
 const GROUP_ID = "-4012462704";
 const bot = new Bot(String(TOKEN));
 
-function sendMessageWithRetry(chatId: any, message: any) {
-  bot.api.sendMessage(chatId, message).catch((error) => {
-    if (error.response && error.response.statusCode === 429) {
-      const retryAfter = error.response.parameters.retry_after || 5;
-      console.log(`Rate limited, retry after ${retryAfter} seconds.`);
-      setTimeout(() => {
-        sendMessageWithRetry(chatId, message);
-      }, retryAfter * 1000);
-    } else {
-      console.error("Failed to send message:", error.message);
-    }
-  });
-}
-
 fs.readFile("data/hosts.json", "utf8", (err, data) => {
   if (err) {
     console.error("Error reading file:", err);
@@ -51,8 +37,9 @@ fs.readFile("data/hosts.json", "utf8", (err, data) => {
   };
 
   //addhost function
-  bot.command(["addhost", "hostlist"], async (ctx, next) => {
-    const command = ctx.message?.text;
+  bot.command(["addhost", "hostlist", "deletehost"], async (ctx, next) => {
+    const input = ctx.message?.text.split(" ");
+    const command = input?.at(0);
     if (command === "/addhost") {
       await ctx.reply("Okay. let put some info");
       await ctx.reply(
@@ -67,6 +54,27 @@ fs.readFile("data/hosts.json", "utf8", (err, data) => {
           `Name: ${host.name}\nIP: ${host.ip}\nISP: ${host.isp}\nSID: ${host.sid}\nCID: ${host.cid} \nLocation: ${host.loc}`
         );
       }
+    }
+    if (command === "/deletehost") {
+      const args = input?.at(1);
+      if (!args) return;
+      const found = hosts.find((x: any) => {
+        if (x.ip === args) {
+          return x;
+        }
+      });
+      const newHosts = hosts.filter((x: any) => x !== found);
+      let updatedData = JSON.stringify(newHosts, null, 2);
+      fs.writeFile("data/hosts.json", updatedData, "utf8", (err) => {
+        if (err) {
+          console.error("Error writing file:", err);
+          return;
+        }
+        console.log("File updated successfully!");
+        ctx.reply(
+          `✅ HOST IS DELETED \nName: ${host.name}\nIP: ${host.ip}\nISP: ${host.isp}\nSID: ${host.sid}\nCID: ${host.cid} \nLocation: ${host.loc}`
+        );
+      });
     }
     next();
   });
