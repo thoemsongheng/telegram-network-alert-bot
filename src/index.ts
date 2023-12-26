@@ -37,7 +37,7 @@ fs.readFile("data/hosts.json", "utf8", (err, data) => {
   };
 
   //addhost function
-  bot.command(["addhost", "hostlist", "deletehost"], async (ctx, next) => {
+  bot.command(["addhost", "listhost", "deletehost"], async (ctx, next) => {
     const input = ctx.message?.text.split(" ");
     const command = input?.at(0);
     if (command === "/addhost") {
@@ -47,7 +47,7 @@ fs.readFile("data/hosts.json", "utf8", (err, data) => {
       );
       startCommand = true;
     }
-    if (command === "/hostlist") {
+    if (command === "/listhost") {
       await ctx.reply("Here the host list");
       for (host of hosts) {
         ctx.reply(
