@@ -2,7 +2,7 @@ import ping from "ping";
 import moment from "moment-timezone";
 import fs from "node:fs";
 
-export function Ping() {
+export function PingAlert() {
   fs.readFile("data/hosts.json", "utf8", (err, data) => {
     if (err) {
       console.error(err);
@@ -85,6 +85,6 @@ export function Ping() {
 
     setInterval(() => {
       checkHosts(hosts); // Assuming hosts is defined somewhere
-    }, 1 * 60 * 1000);
+    }, 2 * 1 * 1000);
   });
 }

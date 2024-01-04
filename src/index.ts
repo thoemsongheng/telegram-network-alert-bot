@@ -1,6 +1,6 @@
 require("dotenv").config();
 import { Bot, Context, GrammyError, HttpError } from "grammy";
-import { Ping } from "./utils/ping";
+import { PingAlert } from "./utils/ping";
 import fs from "node:fs";
 
 const TOKEN = process.env.TOKEN;
@@ -80,7 +80,7 @@ bot.on(":text", async (ctx: Context) => {
 });
 
 //run ping function
-Ping();
+PingAlert();
 
 //error handling
 bot.catch((err) => {
