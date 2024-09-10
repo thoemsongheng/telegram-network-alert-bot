@@ -2,8 +2,9 @@ require("dotenv").config();
 import { Bot, Context, GrammyError, HttpError } from "grammy";
 import { PingAlert } from "./utils/ping";
 import { hosts, hostsType } from "./hosts";
+
 const TOKEN = process.env.TOKEN;
-const GROUP_ID = "-4012462704";
+const groupId = process.env.GROUP_ID;
 const bot = new Bot(String(TOKEN));
 
 type HostState = {
@@ -79,9 +80,9 @@ bot.on(":text", async (ctx: Context) => {
 });
 
 //run ping function
-PingAlert(hosts as hostsType[]);
+PingAlert(hosts);
 
-//error handling
+// error handling
 bot.catch((err) => {
   const ctx = err.ctx;
   console.error(`Error while handling update ${ctx.update.update_id}:`);

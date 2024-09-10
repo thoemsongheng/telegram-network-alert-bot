@@ -3,13 +3,7 @@ import moment from "moment-timezone";
 import { hostsType } from "../hosts";
 
 export function PingAlert(hosts: hostsType[]) {
-  const format = "hh:mm:ss";
-  const start = moment("05:00:00", format);
-  const end = moment("20:00:00", format);
   const currentTime = (): moment.Moment => moment().tz("Asia/Phnom_Penh");
-
-  let alive: { host: string; live: boolean; time: moment.Moment }[] = [];
-
   const sendMessage = (
     status: string,
     host: hostsType,
@@ -30,44 +24,41 @@ export function PingAlert(hosts: hostsType[]) {
     console.log(statusMessage);
   };
 
-  const checkHosts = (hosts: hostsType[]) => {
-    (hosts || []).forEach((host: hostsType) => {
+  const checkHost = (host: hostsType) => {
+    let prevStatus: boolean;
+    let failedCount: number = 0;
+    let alertCount: number = 0;
+    setInterval(() => {
       ping.promise
-        .probe(host.ip, { timeout: 1 })
+        .probe(host.ip)
         .then((res) => {
-          const isTimeValid = currentTime().isBetween(start, end);
-
-          const found = alive.find((x) => x.host === host.ip);
-
-          if (isTimeValid) {
-            if (res?.alive) {
-              if (found) {
-                if (!found.live) {
-                  found.live = true;
-                  sendMessage("RECOVERY", host, true, res);
-                }
-                return;
-              }
-              alive.push({ host: host.ip, live: true, time: currentTime() });
-            } else {
-              if (found) {
-                if (found.live) {
-                  found.live = false;
-                  sendMessage("PROBLEM", host, false, res);
-                }
-                return;
-              }
-              alive.push({ host: host.ip, live: false, time: currentTime() });
+          let crrStatus: boolean;
+          if (!res.alive) {
+            failedCount++;
+            if (failedCount > 5) {
+              if (alertCount > 0) return;
+              crrStatus = false;
+              sendMessage("DOWN", host, res.alive, res);
+              alertCount = 1;
+              prevStatus = crrStatus;
+            }
+          } else if (res.alive) {
+            failedCount = 0;
+            alertCount = 0;
+            crrStatus = true;
+            if (prevStatus !== crrStatus) {
+              sendMessage("UP", host, res.alive, res);
+              prevStatus = crrStatus;
             }
           }
         })
-        .catch((error) => {
-          console.log(error);
+        .catch((err) => {
+          console.log(err);
         });
-    });
+    }, 1000);
   };
 
-  setInterval(() => {
-    checkHosts(hosts as hostsType[]); // Assuming hosts is defined somewhere
-  }, 2 * 1 * 1000);
+  hosts.forEach((host) => {
+    checkHost(host);
+  });
 }

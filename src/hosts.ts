@@ -9,9 +9,25 @@ export interface hostsType {
 
 export let hosts: hostsType[] = [
   {
-    ip: "8.8.8.8",
-    name: "Google DNS",
-    isp: "Google Domian",
+    ip: "192.168.0.1",
+    name: "Router",
+    isp: "none",
+    sid: "none",
+    cid: "none",
+    loc: "none",
+  },
+  {
+    ip: "192.168.0.98",
+    name: "Destop",
+    isp: "none",
+    sid: "none",
+    cid: "none",
+    loc: "none",
+  },
+  {
+    ip: "192.168.0.122",
+    name: "Laptop",
+    isp: "none",
     sid: "none",
     cid: "none",
     loc: "none",
