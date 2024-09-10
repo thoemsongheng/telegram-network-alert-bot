@@ -47,7 +47,9 @@ export function PingAlert(hosts: hostsType[]) {
             alertCount = 0;
             crrStatus = true;
             if (prevStatus !== crrStatus) {
+              if (alertCount > 0) return;
               sendMessage("UP", host, res.alive, res);
+              alertCount = 1;
               prevStatus = crrStatus;
             }
           }
