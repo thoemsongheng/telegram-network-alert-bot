@@ -1,35 +1,30 @@
-export interface hostsType {
+interface Host {
   name: string;
   ip: string;
-  isp: string;
-  sid: string;
-  cid: string;
-  loc: string;
+  isp?: string;
+  sid?: string;
+  cid?: string;
+  location?: string;
 }
 
-export let hosts: hostsType[] = [
+let hosts: Host[] = [
   {
     ip: "192.168.0.1",
     name: "Router",
     isp: "none",
     sid: "none",
     cid: "none",
-    loc: "none",
+    location: "none",
   },
-  {
-    ip: "192.168.0.98",
-    name: "Destop",
-    isp: "none",
-    sid: "none",
-    cid: "none",
-    loc: "none",
-  },
+
   {
     ip: "192.168.0.122",
     name: "Laptop",
     isp: "none",
     sid: "none",
     cid: "none",
-    loc: "none",
+    location: "none",
   },
 ];
+
+export { Host, hosts };
