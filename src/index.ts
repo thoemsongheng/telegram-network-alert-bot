@@ -1,8 +1,10 @@
 require("dotenv").config();
 import { Bot, Context, GrammyError, HttpError } from "grammy";
 import moment from "moment-timezone";
-import ping, { PingResponse } from "ping";
+// import ping, { PingResponse } from "ping";
 import { Host, hosts } from "./hosts";
+
+import { ping, ResponseType } from "./utils/ping";
 
 const TOKEN = process.env.TOKEN;
 const groupId = process.env.GROUP_ID;
@@ -81,20 +83,67 @@ bot.on(":text", async (ctx: Context) => {
 });
 
 const currentTime = (): moment.Moment => moment().tz("Asia/Phnom_Penh");
-const sendMessage = (host: Host, res: PingResponse) => {
-  const date = currentTime().format("lll");
-  const statusMessage = `● Alert: ${res.alive ? "UP" : "DOWN"} ${
-    res.alive ? "✅" : "❌"
-  }\n- Type: ${res.alive ? "UP" : "DOWN"}\n- name: ${host.name}\n- IP: ${
-    host.ip
-  }\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${
-    host.location
-  }\n- Date: ${date}\n${res ? res.output : ""}`;
+// const sendMessage = (host: Host, res: PingResponse) => {
+//   const date = currentTime().format("lll");
+//   const statusMessage = `● Alert: ${res.alive ? "UP" : "DOWN"} ${
+//     res.alive ? "✅" : "❌"
+//   }\n- Type: ${res.alive ? "UP" : "DOWN"}\n- name: ${host.name}\n- IP: ${
+//     host.ip
+//   }\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${
+//     host.location
+//   }\n- Date: ${date}\n${res ? res.output : ""}`;
 
-  // Send message or log it
-  // bot.api.sendMessage(String(groupId), statusMessage);
-  console.log(statusMessage);
-};
+//   // Send message or log it
+//   // bot.api.sendMessage(String(groupId), statusMessage);
+//   console.log(statusMessage);
+// };
+
+// ((): void => {
+//   const hostStatuses: Record<string, HostStatus> = hosts.reduce((acc, host) => {
+//     acc[host.ip] = { alive: true, failureCount: 0 };
+//     return acc;
+//   }, {} as Record<string, HostStatus>);
+
+//   setInterval(() => {
+//     hosts.forEach((host) => {
+//       ping.promise
+//         .probe(host.ip)
+//         .then((res: ping.PingResponse) => {
+//           console.log(res.host, res.alive);
+//           const currentStatus = res.alive;
+//           const hostStatus = hostStatuses[host.ip];
+
+//           if (hostStatus.alive !== null) {
+//             if (hostStatus.alive && !currentStatus) {
+//               hostStatus.failureCount += 1;
+
+//               if (hostStatus.failureCount >= threshold) {
+//                 sendMessage(host, res);
+//                 hostStatus.alive = false;
+//               }
+//             } else if (!hostStatus.alive && currentStatus) {
+//               hostStatus.failureCount = 0;
+//               sendMessage(host, res);
+//               hostStatus.alive = true;
+//             } else if (currentStatus) {
+//               hostStatus.failureCount = 0;
+//             }
+//           } else {
+//             hostStatus.alive = currentStatus;
+//           }
+//         })
+//         .catch((err: Error) => {
+//           console.error(`Error pinging ${host.ip}:`, err);
+//         });
+//     });
+//   }, 2000);
+// })();
+
+const testHost: { ip: string }[] = [
+  { ip: "192.168.1.8" },
+  { ip: "1.1.1.1" },
+  { ip: "192.168.0.98" },
+];
 
 interface HostStatus {
   alive: boolean | null;
@@ -103,45 +152,59 @@ interface HostStatus {
 
 const threshold = 5; // Set the threshold for minimum failures
 
-((): void => {
-  const hostStatuses: Record<string, HostStatus> = hosts.reduce((acc, host) => {
-    acc[host.ip] = { alive: true, failureCount: 0 };
-    return acc;
-  }, {} as Record<string, HostStatus>);
-
-  setInterval(() => {
-    hosts.forEach((host) => {
-      ping.promise
-        .probe(host.ip)
-        .then((res: ping.PingResponse) => {
-          console.log(res.host, res.alive);
-          const currentStatus = res.alive;
+// pinging each hosts
+(() => {
+  //store prev state to count maximum failed before send message
+  const hostStatuses: Record<string, HostStatus> = testHost.reduce(
+    (acc, host) => {
+      acc[host.ip] = { alive: true, failureCount: 0 };
+      return acc;
+    },
+    {} as Record<string, HostStatus>
+  );
+  const pingHosts = () => {
+    const pingPromises = testHost.map((host) => {
+      return ping(host.ip)
+        .then((result: ResponseType) => {
+          console.log(result);
+          const currentStatus = result.alive;
           const hostStatus = hostStatuses[host.ip];
 
-          if (hostStatus.alive !== null) {
-            if (hostStatus.alive && !currentStatus) {
+          if (!hostStatus) {
+            hostStatuses[host.ip] = { alive: currentStatus, failureCount: 0 };
+            return;
+          }
+
+          if (hostStatus?.alive !== null) {
+            if (hostStatus?.alive && !currentStatus) {
               hostStatus.failureCount += 1;
 
-              if (hostStatus.failureCount >= threshold) {
-                sendMessage(host, res);
+              if (hostStatus?.failureCount >= threshold) {
+                console.log(host, result);
                 hostStatus.alive = false;
               }
-            } else if (!hostStatus.alive && currentStatus) {
+            } else if (!hostStatus?.alive && currentStatus) {
               hostStatus.failureCount = 0;
-              sendMessage(host, res);
+              console.log(host, result);
               hostStatus.alive = true;
             } else if (currentStatus) {
               hostStatus.failureCount = 0;
             }
           } else {
             hostStatus.alive = currentStatus;
+            hostStatus.failureCount = 0;
           }
         })
-        .catch((err: Error) => {
-          console.error(`Error pinging ${host.ip}:`, err);
-        });
+        .catch((error) => console.log(error));
     });
-  }, 2000);
+    Promise.all(pingPromises).then(() => {
+      console.log("Ping complete. Restarting in 5 seconds...");
+      setTimeout(pingHosts, 25000); // Restart the timer after 5 seconds
+    });
+  };
+
+  // Start the first ping
+  pingHosts();
 })();
 
 // error handling
