@@ -154,7 +154,7 @@ const threshold = 5; // Set the threshold for minimum failures
 
 // pinging each hosts
 (() => {
-  //store prev state to count maximum failed before send message
+  // store prev state to count maximum failed before send message
   const hostStatuses: Record<string, HostStatus> = testHost.reduce(
     (acc, host) => {
       acc[host.ip] = { alive: true, failureCount: 0 };
@@ -162,19 +162,22 @@ const threshold = 5; // Set the threshold for minimum failures
     },
     {} as Record<string, HostStatus>
   );
+
+  // ip addr ping func
   const pingHosts = () => {
     const pingPromises = testHost.map((host) => {
       return ping(host.ip)
         .then((result: ResponseType) => {
-          console.log(result);
           const currentStatus = result.alive;
           const hostStatus = hostStatuses[host.ip];
 
+          // set initial value
           if (!hostStatus) {
             hostStatuses[host.ip] = { alive: currentStatus, failureCount: 0 };
             return;
           }
 
+          // checking ping status and update value
           if (hostStatus?.alive !== null) {
             if (hostStatus?.alive && !currentStatus) {
               hostStatus.failureCount += 1;
@@ -197,6 +200,8 @@ const threshold = 5; // Set the threshold for minimum failures
         })
         .catch((error) => console.log(error));
     });
+
+    // execute ping func
     Promise.all(pingPromises).then(() => {
       console.log("Ping complete. Restarting in 5 seconds...");
       setTimeout(pingHosts, 25000); // Restart the timer after 5 seconds
