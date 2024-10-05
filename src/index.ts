@@ -3,12 +3,14 @@ import { Bot, Context, GrammyError, HttpError } from "grammy";
 import moment from "moment-timezone";
 // import ping, { PingResponse } from "ping";
 import { Host, hosts } from "./hosts";
-
+import { connect } from "./db/db";
 import { ping, ResponseType } from "./utils/ping";
 
 const TOKEN = process.env.TOKEN;
 const groupId = process.env.GROUP_ID;
 const bot = new Bot(String(TOKEN));
+
+connect();
 
 type HostState = {
   [key: string]: {
@@ -83,62 +85,6 @@ bot.on(":text", async (ctx: Context) => {
 });
 
 const currentTime = (): moment.Moment => moment().tz("Asia/Phnom_Penh");
-// const sendMessage = (host: Host, res: PingResponse) => {
-//   const date = currentTime().format("lll");
-//   const statusMessage = `● Alert: ${res.alive ? "UP" : "DOWN"} ${
-//     res.alive ? "✅" : "❌"
-//   }\n- Type: ${res.alive ? "UP" : "DOWN"}\n- name: ${host.name}\n- IP: ${
-//     host.ip
-//   }\n- SID: ${host.sid}\n- CID: ${host.cid}\n- Address: ${
-//     host.location
-//   }\n- Date: ${date}\n${res ? res.output : ""}`;
-
-//   // Send message or log it
-//   // bot.api.sendMessage(String(groupId), statusMessage);
-//   console.log(statusMessage);
-// };
-
-// ((): void => {
-//   const hostStatuses: Record<string, HostStatus> = hosts.reduce((acc, host) => {
-//     acc[host.ip] = { alive: true, failureCount: 0 };
-//     return acc;
-//   }, {} as Record<string, HostStatus>);
-
-//   setInterval(() => {
-//     hosts.forEach((host) => {
-//       ping.promise
-//         .probe(host.ip)
-//         .then((res: ping.PingResponse) => {
-//           console.log(res.host, res.alive);
-//           const currentStatus = res.alive;
-//           const hostStatus = hostStatuses[host.ip];
-
-//           if (hostStatus.alive !== null) {
-//             if (hostStatus.alive && !currentStatus) {
-//               hostStatus.failureCount += 1;
-
-//               if (hostStatus.failureCount >= threshold) {
-//                 sendMessage(host, res);
-//                 hostStatus.alive = false;
-//               }
-//             } else if (!hostStatus.alive && currentStatus) {
-//               hostStatus.failureCount = 0;
-//               sendMessage(host, res);
-//               hostStatus.alive = true;
-//             } else if (currentStatus) {
-//               hostStatus.failureCount = 0;
-//             }
-//           } else {
-//             hostStatus.alive = currentStatus;
-//           }
-//         })
-//         .catch((err: Error) => {
-//           console.error(`Error pinging ${host.ip}:`, err);
-//         });
-//     });
-//   }, 2000);
-// })();
-
 const testHost: { ip: string }[] = [
   { ip: "192.168.1.8" },
   { ip: "1.1.1.1" },
