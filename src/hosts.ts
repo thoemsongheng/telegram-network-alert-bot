@@ -1,30 +1,18 @@
-interface Host {
-  name: string;
-  ip: string;
-  isp?: string;
-  sid?: string;
-  cid?: string;
-  location?: string;
-}
+import { Host, HostType } from "./db/db";
 
-let hosts: Host[] = [
-  {
-    ip: "192.168.0.1",
-    name: "Router",
-    isp: "none",
-    sid: "none",
-    cid: "none",
-    location: "none",
-  },
+const getHost = async () => {
+  const hosts = await Host.find();
+  return hosts as HostType[];
+};
 
-  {
-    ip: "192.168.0.122",
-    name: "Laptop",
-    isp: "none",
-    sid: "none",
-    cid: "none",
-    location: "none",
-  },
-];
+const addHost = async (args: HostType) => {
+  const newHost = new Host(args);
+  await newHost.save();
+};
 
-export { Host, hosts };
+const deleteHost = async (ip: string, args: HostType) => {
+  const foundHost = Host.findOne({ ipAddress: ip });
+  await foundHost.deleteOne();
+};
+
+export { addHost, deleteHost, getHost };

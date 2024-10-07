@@ -9,9 +9,19 @@ async function connect() {
   console.log("Databse conneted success!");
 }
 
+type HostType = {
+  name: string;
+  ipAddress: string;
+  location?: string;
+  provider?: string;
+  serviceId?: string;
+  customerId?: string;
+};
+
 const hostSchema = new mongoose.Schema({
   name: String,
   ipAddress: String,
+  provider: String,
   location: String,
   serviceId: String,
   customerId: String,
@@ -19,16 +29,4 @@ const hostSchema = new mongoose.Schema({
 
 const Host = mongoose.model("Host", hostSchema);
 
-/**
- * create new host exmaple
- * const googleHost = new Host({
-    name: "Google Ip",
-    ipAddress: "8.8.8.8",
-    location: "",
-    serviceId: "",
-    customerId: "",
-  });
-  googleHost.save();
- */
-
-export { connect, Host };
+export { connect, Host, HostType };
