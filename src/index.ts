@@ -1,9 +1,9 @@
 require("dotenv").config();
 import { Bot, Context, GrammyError, HttpError } from "grammy";
-import moment from "moment-timezone";
 import { connect, HostType } from "./db/db";
 import { ping, ResponseType } from "./utils/ping";
 import { addHost, getHost } from "./hosts";
+import { sendMessage } from "./utils/sendMessage";
 
 const TOKEN = process.env.TOKEN;
 const groupId = process.env.GROUP_ID;
@@ -106,8 +106,6 @@ bot.on(":text", async (ctx: Context) => {
   }
 });
 
-const currentTime = (): moment.Moment => moment().tz("Asia/Phnom_Penh");
-
 interface HostStatus {
   alive: boolean | null;
   failureCount: number;
@@ -160,12 +158,17 @@ const threshold = 5; // Set the threshold for minimum failures
                   hostStatus.failureCount += 1;
 
                   if (hostStatus?.failureCount >= threshold) {
-                    console.log(host, "down");
+                    sendMessage(result, host, (message) => {
+                      bot.api.sendMessage(String(groupId), message);
+                    });
                     hostStatus.alive = false;
                   }
                 } else if (!hostStatus?.alive && currentStatus) {
                   hostStatus.failureCount = 0;
-                  console.log(host, "up");
+                  sendMessage(result, host, (message) => {
+                    bot.api.sendMessage(String(groupId), message);
+                  });
+
                   hostStatus.alive = true;
                 } else if (currentStatus) {
                   hostStatus.failureCount = 0;
@@ -180,7 +183,7 @@ const threshold = 5; // Set the threshold for minimum failures
 
         // execute ping func
         Promise.all(pingPromises).then(() => {
-          console.log("Ping complete. Restarting in 5 seconds...");
+          // console.log("Ping complete. Restarting in 5 seconds..."); // enable for debuging
           setTimeout(pingHosts, 10000); // Restart the timer after 5 seconds
         });
       };

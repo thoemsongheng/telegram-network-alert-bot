@@ -6,7 +6,7 @@ connect().catch((err) => console.log(err));
 
 async function connect() {
   await mongoose.connect(String(uri));
-  console.log("Databse conneted success!");
+  console.log("Databse conneted success! ✅");
 }
 
 type HostType = {
